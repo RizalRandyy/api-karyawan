@@ -21,13 +21,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
+# Copy seluruh project
 COPY . .
 
+# ✅ Pastikan folder bootstrap/cache ada dan writable
+RUN mkdir -p bootstrap/cache \
+    && chown -R www-data:www-data bootstrap/cache \
+    && chmod -R 775 bootstrap/cache
+
+# Install dependencies Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
+# Set permission storage juga
+RUN chown -R www-data:www-data storage \
+    && chmod -R 775 storage
 
+# Expose port dan jalankan server
 EXPOSE 8000
 CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
